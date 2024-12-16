@@ -1,0 +1,35 @@
+---
+title: Analyze Clerk events with Tinybird
+description: Use Tinybird to analyze events from Clerk
+---
+
+This integration enables Clerk to send events to [Tinybird](https://tinybird.co).
+
+Before you start, you'll need to create a Tinybird Workspace.
+
+1. From the Clerk UI, select **Configure** > **Webhooks**.
+   
+2. Select **Add Endpoint**.
+
+3. In Tinybird, create a Data Source (called `clerk` in this example), with the following schema:
+
+```tb {% title = 'Data Source schema for Clerk events %}
+SCHEMA >
+  'ingest_timestamp' DateTime `json:$.time` DEFAULT now(),
+  'record' JSON `json:$`
+
+ENGINE "MergeTree"
+ENGINE_SORTING_KEY "ingest_timestamp"
+ENGINE_TTL ""
+ENGINE_PARTITION_KEY ""
+```
+
+4. Back in Clerk, paste the Events API URL in your Webhook Endpoint URL. Use the query parameter `name` to match the name of the Data Source you created in Tinybird, for example: `https://api.tinybird.co/v0/events?name=clerk`.
+
+5. Return to Tinybird, and copy a token with priveleges to write to the Data Source you created. You can use the admin token or create one with the required scope.
+
+6. Return to the Clerk Webhooks page, and update the URL to add a new search parameter `token` with the token you copied. The final URL looks like: `https://api.tinybird.co/v0/events?name=clerk&token=p.eyXXXXX`.
+
+7. Select the checkboxes for the Clerk events you want to send to Tinybird, and select **Create**.
+
+8. You're done. Any of the Clerk events you selected will automatically be sent to Tinybird via the [Events API](/ingest/events-api). You can test the integration from the **Testing** tab in the Clerk Webhooks UI. 
